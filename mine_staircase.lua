@@ -1,34 +1,34 @@
-start_x = arg[1]
-start_y = arg[2]
-start_z = arg[3]
+local start_x = arg[1]
+local start_y = arg[2]
+local start_z = arg[3]
 
 if (start_x == nil or start_y == nil or start_z == nil) then
     print("XYZ coords needed")
     return
 end
 
-coords = {x = start_x, y = start_y, z = start_z} -- not sure if needed right now. can't distinguish NSEW yet.
-numStepsTaken = 0
+local coords = {x = start_x, y = start_y, z = start_z} -- not sure if needed right now. can't distinguish NSEW yet.
+local numStepsTaken = 0
 
-hasExtraFuel = false
-fuelThreshold = 200
+local hasExtraFuel = false
+local fuelThreshold = 200
 
-fuelSlot = getFuelSlot()
-torchSlot = getTorchSlot()
-stairSlot = getStairSlot()
+local fuelSlot = getFuelSlot()
+local torchSlot = getTorchSlot()
+local stairSlot = getStairSlot()
 
-torchEvery = 5
+local torchEvery = 5
 
-stairWidth = 2
+local stairWidth = 2
 
-Headings = {
+local Headings = {
     FORWARDS = 0,
     RIGHT = 1,
     BACK = 2,
     LEFT = 3,
 }
 
-currentHeading = Headings.FORWARDS
+local currentHeading = Headings.FORWARDS
 
 function getFuelSlot()
     for i = 1, 16 do

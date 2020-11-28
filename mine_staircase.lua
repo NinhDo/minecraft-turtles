@@ -1,21 +1,21 @@
-local start_x = arg[1]
-local start_y = arg[2]
-local start_z = arg[3]
+local curr_y = tonumber(arg[1])
+local home_y = tonumber(arg[2])
+local lowest_y = tonumber(arg[3])
 
-if (start_x == nil or start_y == nil or start_z == nil) then
-    print("XYZ coords needed")
+if (curr_y == nil or home_y == nil or lowest_y == nil) then
+    print("Need current Y, home Y, and lowest Y")
     return
 end
 
-local coords = {x = start_x, y = start_y, z = start_z} -- not sure if needed right now. can't distinguish NSEW yet.
-local numStepsTaken = 0
+local coords = { -- not sure if needed right now. can't distinguish NSEW yet.
+    y = curr_y,
+    home = home_y
+}
 
 local hasExtraFuel = false
 local fuelThreshold = 200
 
 local torchEvery = 5
-
-local stairWidth = 2
 
 local Headings = {
     FORWARDS = 0,
@@ -31,6 +31,7 @@ function getFuelSlot()
         local item = turtle.getItemDetail(i)
         if item and (item.name == "minecraft:coal" or item.name == "minecraft:coal_block") then
             hasExtraFuel = true
+            print("Current fuel slot:", i)
             return i
         end
     end
@@ -43,6 +44,7 @@ function getTorchSlot()
     for i = 1, 16 do
         local item = turtle.getItemDetail(i)
         if item and item.name == "minecraft:torch" then
+            print("Current torch slot:", i)
             return i
         end
     end
@@ -53,6 +55,7 @@ function getStairSlot()
     for i = 1, 16 do
         local item = turtle.getItemDetail(i)
         if item and item.name == "minecraft:stone_stairs" then
+            print("Current stair slot:", i)
             return i
         end
     end
@@ -67,19 +70,22 @@ function checkFuel()
     local fuelLevel = turtle.getFuelLevel()
     if fuelLevel < fuelThreshold then
         if hasExtraFuel then
-            turtle.refuel(fuelSlot)
+            turtle.select(fuelSlot)
+            turtle.refuel(1)
             local item = turtle.getItemDetail(fuelSlot)
             if item and (item.name == "minecraft:coal" or item.name == "minecraft:coal_block") then
                 hasExtraFuel = true
             else
+                print("No more extra fuel")
                 hasExtraFuel = false
             end
             return true
         end
+    else
+        return true -- we have enough fuel
     end
     return false
 end
-
 
 function turnRight()
     turtle.turnRight()
@@ -92,9 +98,9 @@ function turnLeft()
     currentHeading = (currentHeading - 1) % 4
 end
 
-function turnForwards()
+function faceForwards()
     if currentHeading == Headings.FORWARDS then
-        return
+        return nil
     elseif currentHeading == Headings.RIGHT then
         turnLeft()
     elseif currentHeading == Headings.LEFT then
@@ -105,13 +111,39 @@ function turnForwards()
     end
 end
 
-function turnBackwards()
+function faceRight()
+    if currentHeading == Headings.RIGHT then
+        return nil
+    elseif currentHeading == Headings.BACK then
+        turnLeft()
+    elseif currentHeading == Headings.FORWARDS then
+        turnRight()
+    else
+        turnRight()
+        turnRight()
+    end
+end
+
+function faceBackwards()
     if currentHeading == Headings.BACK then
-        return
+        return nil
     elseif currentHeading == Headings.RIGHT then
         turnRight()
-    else if currentHeading == Headings.LEFT then
+    elseif currentHeading == Headings.LEFT then
         turnLeft()
+    else
+        turnRight()
+        turnRight()
+    end
+end
+
+function faceLeft()
+    if currentHeading == Headings.LEFT then
+        return nil
+    elseif currentHeading == Headings.FORWARDS then
+        turnLeft()
+    elseif currentHeading == Headings.BACK then
+        turnRight()
     else
         turnRight()
         turnRight()
@@ -123,29 +155,23 @@ function goDown()
     coords.y = coords.y - 1
 end
 
-
 function goUp()
     turtle.up()
     coords.y = coords.y + 1
 end
 
-function returnHome()
-    turnBackwards()
-    while coords.y ~= start_y do
-        goUp()
-        turtle.forward()
-    end
-    turnForwards()
-end
-
 function placeStairs()
     turtle.select(stairSlot)
-    turtle.placeDown()
+    turtle.place()
 end
 
 function placeTorch()
     turtle.select(torchSlot)
+    turnRight()
+    turnRight()
     turtle.place()
+    turnLeft()
+    turnLeft()
 end
 
 function dig()
@@ -159,42 +185,34 @@ function digForwards()
     while turtle.detect() do -- in case of gravel
         turtle.dig()
     end
-    if numStepsTaken % torchEvery == 0 then
-        placeTorch()
-    end
     turtle.forward()
-    if currentHeading == Headings.FORWARDS then
-        numStepsTaken = numStepsTaken + 1
+end
+
+
+function returnHome()
+    print("Returning home...")
+    digForwards()
+    turtle.digUp()
+    faceBackwards()
+    turtle.forward()
+    while coords.y < coords.home do
+        placeStairs()
+        goUp()
+        turtle.forward()
+        if coords.y % torchEvery == 0 then
+            placeTorch()
+        end
     end
+    faceForwards()
 end
 
 function digStairs()
-    while coords.y > 4 do
+    print("Starting to dig stairs...")
+    while coords.y > lowest_y do
         if not checkFuel() then
             break
         end
-        if stairWidth > 1 then -- if the width is more than 1, we need to weave
-            -- 1. look forwards
-            -- 2. dig, then place stairs
-            -- 3. turn
-            -- 4. repeat 1-3 if necessary
-            -- 5. turn forwards again
-            for i = 1, stairWidth do
-                turnForwards()
-                dig()
-                placeStairs()
-                if coords.y % 2 == 1 then -- odd numbered coords dig turn right
-                    turnRight()
-                else
-                    turnLeft()
-                end
-                digForwards()
-            end
-            turnForwards()
-        else
-            dig()
-            placeStairs()
-        end
+        turtle.digDown()
         digForwards()
         dig()
         goDown()
@@ -204,5 +222,3 @@ end
 
 digStairs()
 print("Done making stairs.")
-
-end

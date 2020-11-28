@@ -6,6 +6,7 @@ if (start_x == nil or start_y == nil or start_z == nil) then
     print("XYZ coords needed")
     exit()
 end
+
 coords = {x = start_x, y = start_y, z = start_z} -- not sure if needed right now. can't distinguish NSEW yet.
 numStepsTaken = 0
 
@@ -32,7 +33,7 @@ currentHeading = Headings.FORWARDS
 function getFuelSlot()
     for i = 1, 16 do
         local item = turtle.getItemDetail(i)
-        if item and (item.name == "minecraft:coal" or item.name = "minecraft:coal_block") then
+        if item and (item.name == "minecraft:coal" or item.name == "minecraft:coal_block") then
             hasExtraFuel = true
             return i
         end
@@ -67,11 +68,16 @@ function checkFuel()
     if fuelLevel < fuelThreshold then
         if hasExtraFuel then
             turtle.refuel(fuelSlot)
+            local item = turtle.getItemDetail(fuelSlot)
+            if item and (item.name == "minecraft:coal" or item.name == "minecraft:coal_block") then
+                hasExtraFuel = true
+            else
+                hasExtraFuel = false
+            end
             return true
-        else
-            return false
         end
     end
+    return false
 end
 
 
@@ -87,11 +93,11 @@ function turnLeft()
 end
 
 function turnForwards()
-    if currentHeading == Headings.FORWARDS do
+    if currentHeading == Headings.FORWARDS then
         return
-    elseif currentHeading == Headings.RIGHT do
+    elseif currentHeading == Headings.RIGHT then
         turnLeft()
-    else if currentHeading == Headings.LEFT do
+    elseif currentHeading == Headings.LEFT then
         turnRight()
     else
         turnRight()
@@ -100,11 +106,11 @@ function turnForwards()
 end
 
 function turnBackwards()
-    if currentHeading == Headings.BACK do
+    if currentHeading == Headings.BACK then
         return
-    elseif currentHeading == Headings.RIGHT do
+    elseif currentHeading == Headings.RIGHT then
         turnRight()
-    else if currentHeading == Headings.LEFT do
+    else if currentHeading == Headings.LEFT then
         turnLeft()
     else
         turnRight()
@@ -162,14 +168,9 @@ function digForwards()
     end
 end
 
-function digDown()
-
-    coords.y = coords.y - 1
-end
-
 function digStairs()
     while coords.y > 4 do
-        if ~checkFuel() then
+        if not checkFuel() then
             break
         end
         if stairWidth > 1 then -- if the width is more than 1, we need to weave
@@ -199,4 +200,9 @@ function digStairs()
         goDown()
     end
     returnHome()
+end
+
+digStairs()
+print("Done making stairs.")
+
 end

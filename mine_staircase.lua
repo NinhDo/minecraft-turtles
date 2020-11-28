@@ -59,6 +59,7 @@ function getStairSlot()
             return i
         end
     end
+    print("Out of stairs")
     return nil
 end
 
@@ -161,8 +162,14 @@ function goUp()
 end
 
 function placeStairs()
-    turtle.select(stairSlot)
-    turtle.place()
+    if turtle.getItemDetail(stairSlot).name ~= "minecraft:stone_stair" then
+        stairSlot = getStairSlot()
+    end
+    if stairSlot then
+        turtle.select(stairSlot)
+        turtle.place()
+    end
+
 end
 
 function placeTorch()

@@ -4,7 +4,7 @@ start_z = arg[3]
 
 if (start_x == nil or start_y == nil or start_z == nil) then
     print("XYZ coords needed")
-    exit()
+    return
 end
 
 coords = {x = start_x, y = start_y, z = start_z} -- not sure if needed right now. can't distinguish NSEW yet.

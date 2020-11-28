@@ -173,12 +173,17 @@ function placeStairs()
 end
 
 function placeTorch()
-    turtle.select(torchSlot)
-    turnRight()
-    turnRight()
-    turtle.place()
-    turnLeft()
-    turnLeft()
+    if turtle.getItemDetail(torchSlot).name ~= "minecraft:torch" then
+        torchSlot = getTorchSlot()
+    end
+    if torchSlot then
+        turtle.select(torchSlot)
+        turnRight()
+        turnRight()
+        turtle.place()
+        turnLeft()
+        turnLeft()
+    end
 end
 
 function dig()
@@ -201,8 +206,10 @@ function returnHome()
     digForwards()
     turtle.digUp()
     faceBackwards()
-    turtle.forward()
+    digForwards()
+    digForwards()
     while coords.y < coords.home do
+        turtle.dig()
         placeStairs()
         goUp()
         turtle.forward()
@@ -210,11 +217,13 @@ function returnHome()
             placeTorch()
         end
     end
+    turtle.forward()
     faceForwards()
 end
 
 function digStairs()
     print("Starting to dig stairs...")
+    turtle.forward()
     while coords.y > lowest_y do
         if not checkFuel() then
             break

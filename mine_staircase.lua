@@ -13,10 +13,6 @@ local numStepsTaken = 0
 local hasExtraFuel = false
 local fuelThreshold = 200
 
-local fuelSlot = getFuelSlot()
-local torchSlot = getTorchSlot()
-local stairSlot = getStairSlot()
-
 local torchEvery = 5
 
 local stairWidth = 2
@@ -62,6 +58,10 @@ function getStairSlot()
     end
     return nil
 end
+
+local fuelSlot = getFuelSlot()
+local torchSlot = getTorchSlot()
+local stairSlot = getStairSlot()
 
 function checkFuel()
     local fuelLevel = turtle.getFuelLevel()
